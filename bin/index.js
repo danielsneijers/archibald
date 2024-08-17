@@ -3,7 +3,7 @@
 import { program } from "commander";
 import chalk from "chalk";
 import ora from "ora";
-import puppeteer from "puppeteer-core";
+import puppeteer from "puppeteer";
 import path from "path";
 import fs from "fs-extra";
 import fetch from "node-fetch";
@@ -24,9 +24,7 @@ async function archive(url, options) {
   const spinner = ora(`Archiving ${url}...`).start();
 
   // Launch the browser and open a new blank page
-  const browser = await puppeteer.launch({
-    executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  });
+  const browser = await puppeteer.launch();
 
   const page = await browser.newPage();
 
