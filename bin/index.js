@@ -21,7 +21,6 @@ program
 program.parse(process.argv);
 
 async function archive(url, options) {
-  console.log(options);
   const spinner = ora(`Archiving ${url}...`).start();
 
   // Launch the browser and open a new blank page
@@ -38,8 +37,9 @@ async function archive(url, options) {
   const domain = getDomainName(url);
   const title = await page.title();
   const sanitizedTitle = sanitizeTitle(title); // Sanitized title
-  const customName = options.name ? `_${sanitizeTitle(options.name)}` : ""; // Include custom name if provided
-  const folderName = `${domain}_${sanitizedTitle}${customName}`; // Folder name with domain prefix, sanitized title, and custom name
+  const folderName = options.name
+    ? `${sanitizeTitle(options.name)}`
+    : `${domain}_${sanitizedTitle}`;
   const folderPath = path.resolve(`./${folderName}`);
   await fs.ensureDir(folderPath);
 

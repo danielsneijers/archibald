@@ -57,17 +57,13 @@ Archibald creates a folder named with the domain and a sanitized version of the 
 
 - `screenshot.png`: A full-page screenshot of the web page.
 - `page.pdf`: A PDF version of the web page.
-- `page.html`: The HTML content with inlined styles and stripped scripts.
-- `page.md`: The readable content converted to Markdown with the title as an H1 header.
+- `page.html`: The HTML content with inlined styles.
+- `page.md`: The readable content converted to Markdown.
 
 ## License
 
 Archibald is licensed under the [MIT License](LICENSE). Feel free to use, modify, and distribute it as you wish.
 
-## Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
 ## Support
 
-For any issues or questions, please open an issue on the [GitHub repository](https://github.com/yourusername/archibald).
+For any issues or questions, please open an issue on the [GitHub repository](https://github.com/danielsneijers/archibald).
