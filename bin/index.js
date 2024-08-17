@@ -14,8 +14,8 @@ import { Readability } from "@mozilla/readability";
 program
   .version("1.0.0")
   .description("Archibald - archive the web")
-  .argument("<url>", "url of webpage to archive")
-  .option("-n, --name <type>", "Add your name")
+  .argument("<url>", "URL of the webpage to archive")
+  .option("-n, --name <name>", "Add your name or custom identifier")
   .action(archive);
 
 program.parse(process.argv);
@@ -38,7 +38,8 @@ async function archive(url, options) {
   const domain = getDomainName(url);
   const title = await page.title();
   const sanitizedTitle = sanitizeTitle(title); // Sanitized title
-  const folderName = `${domain}_${sanitizedTitle}`; // Folder name with domain prefix and sanitized title
+  const customName = options.name ? `_${sanitizeTitle(options.name)}` : ""; // Include custom name if provided
+  const folderName = `${domain}_${sanitizedTitle}${customName}`; // Folder name with domain prefix, sanitized title, and custom name
   const folderPath = path.resolve(`./${folderName}`);
   await fs.ensureDir(folderPath);
 
@@ -71,6 +72,21 @@ async function archive(url, options) {
 
   spinner.succeed(chalk.green(`Archived successfully in folder: ${folderPath}`));
 }
+
+function getDomainName(url) {
+  try {
+    const { hostname } = new URL(url);
+    return hostname.replace(/^www\./, "").replace(/[^a-z0-9]/gi, "_");
+  } catch (error) {
+    console.error("Invalid URL:", url, error);
+    return "unknown_domain";
+  }
+}
+
+function sanitizeTitle(title) {
+  return title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+}
+
 async function inlineStyles(page, htmlContent) {
   const styleUrls = await page.$$eval('link[rel="stylesheet"]', (links) =>
     links.map((link) => link.href)
@@ -101,14 +117,10 @@ function stripScripts(htmlContent) {
 }
 
 async function extractMarkdown(page) {
-  // Get the HTML content of the page
   const html = await page.content();
-
-  // Use JSDOM to create a DOM instance of the page
   const dom = new JSDOM(html);
   const document = dom.window.document;
 
-  // Use Mozilla's Readability to extract the article content
   const reader = new Readability(document);
   const article = reader.parse();
 
@@ -116,38 +128,13 @@ async function extractMarkdown(page) {
     throw new Error("Failed to extract readable content from the page.");
   }
 
-  // Convert the article content to Markdown using Turndown
   const turndownService = new TurndownService();
   const markdown = turndownService.turndown(article.content);
 
-  // Add the title as an H1 header at the top
   const title = document.title;
-  const markdownWithTitle = `# ${title}\n\n${markdown}`;
+  const markdownWithTitle = "# " + title + "\n\n" + markdown;
 
   return markdownWithTitle;
-}
-
-function capitalizeTitle(title) {
-  return title
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function getDomainName(url) {
-  try {
-    const { hostname } = new URL(url);
-    // Remove leading 'www.' if present and replace any non-alphanumeric characters with underscores
-    return hostname.replace(/^www\./, "").replace(/[^a-z0-9]/gi, "_");
-  } catch (error) {
-    console.error("Invalid URL:", url, error);
-    return "unknown_domain";
-  }
-}
-
-function sanitizeTitle(title) {
-  // Replace non-alphanumeric characters with underscores and convert to lowercase
-  return title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
 }
 
 async function autoScroll(page) {
